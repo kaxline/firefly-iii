@@ -34,7 +34,7 @@ use Log;
  * Class NewPlaidJobHandler
  *
  */
-class NewPlaidJobHandler implements PLaidJobConfigurationInterface
+class NewPlaidJobHandler implements PlaidJobConfigurationInterface
 {
 
     /**
