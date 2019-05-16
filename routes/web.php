@@ -519,6 +519,10 @@ Route::group(
 
     // callback URI for YNAB OAuth. Sadly, needs a custom solution.
     Route::get('ynab-callback', ['uses' => 'Import\CallbackController@ynab', 'as' => 'callback.ynab']);
+
+	// callback URIs for Plaid
+	Route::post( 'plaid/create_access_token', [ 'uses' => 'Import\CallbackController@createPlaidAccessToken', 'as' => 'callback.createPlaidAccessToken' ] );
+	Route::get( 'plaid/accounts', [ 'uses' => 'Import\CallbackController@getPlaidAccounts', 'as' => 'callback.getPlaidAccounts' ] );
 }
 );
 

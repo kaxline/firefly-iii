@@ -27,6 +27,7 @@ return [
     'index_breadcrumb'                    => 'Import data into Firefly III',
     'prerequisites_breadcrumb_fake'       => 'Prerequisites for the fake import provider',
     'prerequisites_breadcrumb_spectre'    => 'Prerequisites for Spectre',
+    'prerequisites_breadcrumb_plaid'    => 'Prerequisites for Plaid',
     'prerequisites_breadcrumb_bunq'       => 'Prerequisites for bunq',
     'prerequisites_breadcrumb_ynab'       => 'Prerequisites for YNAB',
     'job_configuration_breadcrumb'        => 'Configuration for ":key"',
@@ -166,6 +167,12 @@ return [
     'job_config_ynab_accounts_title'       => 'Select accounts',
     'job_config_ynab_accounts_text'        => 'You have the following accounts available in this budget. Please select from which accounts you want to import, and where the transactions should be stored.',
 
+	// job configuration for Plaid
+    'plaid_do_not_import'                  => '(do not import)',
+    'job_config_plaid_accounts_title'      => 'Select accounts to import from',
+    'job_config_plaid_accounts_text'       => 'You have selected ":name" (:country). You have :count account(s) available from this provider. Please select the Firefly III asset account(s) where the transactions from these accounts should be stored. Remember, in order to import data both the Firefly III account and the ":name"-account must have the same currency.',
+    'job_config_plaid_apply_rules'         => 'Apply rules',
+    'job_config_plaid_apply_rules_text'    => 'By default, your rules will be applied to the transactions created during this import routine. If you do not want this to happen, deselect this checkbox.',
 
     // keys from "extra" array:
     'spectre_extra_key_iban'               => 'IBAN',

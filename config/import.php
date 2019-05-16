@@ -27,28 +27,31 @@ use FireflyIII\Import\JobConfiguration\FakeJobConfiguration;
 use FireflyIII\Import\JobConfiguration\FileJobConfiguration;
 use FireflyIII\Import\JobConfiguration\FinTSJobConfiguration;
 use FireflyIII\Import\JobConfiguration\SpectreJobConfiguration;
+use FireflyIII\Import\JobConfiguration\PlaidJobConfiguration;
 use FireflyIII\Import\JobConfiguration\YnabJobConfiguration;
 use FireflyIII\Import\Prerequisites\BunqPrerequisites;
 use FireflyIII\Import\Prerequisites\FakePrerequisites;
 use FireflyIII\Import\Prerequisites\SpectrePrerequisites;
+use FireflyIII\Import\Prerequisites\PlaidPrerequisites;
 use FireflyIII\Import\Prerequisites\YnabPrerequisites;
 use FireflyIII\Import\Routine\BunqRoutine;
 use FireflyIII\Import\Routine\FakeRoutine;
 use FireflyIII\Import\Routine\FileRoutine;
 use FireflyIII\Import\Routine\FinTSRoutine;
 use FireflyIII\Import\Routine\SpectreRoutine;
+use FireflyIII\Import\Routine\PlaidRoutine;
 use FireflyIII\Import\Routine\YnabRoutine;
 use FireflyIII\Support\Import\Routine\File\CSVProcessor;
 
 return [
     // these import providers are available:
     'enabled'          => [
-        'fake'    => true,
+        'fake'    => false,
         'file'    => true,
         'bunq'    => true,
         'spectre' => true,
         'ynab'    => true,
-        'plaid'   => false,
+        'plaid'   => true,
         'quovo'   => false,
         'yodlee'  => false,
         'fints'   => true,
@@ -97,7 +100,7 @@ return [
         'bunq'    => BunqPrerequisites::class,
         'spectre' => SpectrePrerequisites::class,
         'ynab'    => YnabPrerequisites::class,
-        'plaid'   => false,
+        'plaid'   => PlaidPrerequisites::class,
         'quovo'   => false,
         'yodlee'  => false,
         'fints'   => false,
@@ -109,7 +112,7 @@ return [
         'bunq'    => true,
         'spectre' => true,
         'ynab'    => true,
-        'plaid'   => false,
+        'plaid'   => true,
         'quovo'   => false,
         'yodlee'  => false,
         'fints'   => true,
@@ -121,7 +124,7 @@ return [
         'bunq'    => BunqJobConfiguration::class,
         'spectre' => SpectreJobConfiguration::class,
         'ynab'    => YnabJobConfiguration::class,
-        'plaid'   => false,
+        'plaid'   => PlaidJobConfiguration::class,
         'quovo'   => false,
         'yodlee'  => false,
         'fints'   => FinTSJobConfiguration::class,
@@ -133,7 +136,7 @@ return [
         'bunq'    => BunqRoutine::class,
         'spectre' => SpectreRoutine::class,
         'ynab'    => YnabRoutine::class,
-        'plaid'   => false,
+        'plaid'   => PlaidRoutine::class,
         'quovo'   => false,
         'yodlee'  => false,
         'fints'   => FinTSRoutine::class,

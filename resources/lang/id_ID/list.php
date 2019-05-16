@@ -104,6 +104,7 @@ return [
     'sum_transfers'           => 'Jumlah transfer',
     'reconcile'               => 'Menyesuaikan',
     'account_on_spectre'      => 'Rekening (Spectre)',
+    'account_on_plaid'        => 'Rekening (Plaid)',
     'account_on_ynab'         => 'Rekening (YNAB)',
     'do_import'               => 'Ambil dari rekening ini',
     'sepa-ct-id'              => 'SEPA End to End Identifier',

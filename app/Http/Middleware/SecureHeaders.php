@@ -45,13 +45,17 @@ class SecureHeaders
         $response    = $next($request);
         $google      = '';
         $analyticsId = config('firefly.analytics_id');
+        $plaidCdn       = 'cdn.plaid.com';
+        $plaidAnalytics = 'analytics.plaid.com';
+        $plaidDevelopment = 'development.plaid.com';
+        $cloudflareCdn = 'cdnjs.cloudflare.com';
         if ('' !== $analyticsId) {
             $google = 'www.googletagmanager.com/gtag/js'; // @codeCoverageIgnore
         }
         $csp = [
-            "default-src 'none'",
+	        sprintf( "default-src 'self' 'unsafe-eval' 'unsafe-inline' %s %s %s %s", $plaidCdn, $plaidAnalytics, $plaidDevelopment, $cloudflareCdn),
             "object-src 'self'",
-            sprintf("script-src 'self' 'unsafe-eval' 'unsafe-inline' %s", $google),
+            sprintf("script-src 'self' 'unsafe-eval' 'unsafe-inline' %s %s %s %s %s", $google, $plaidCdn, $plaidAnalytics, $plaidDevelopment, $cloudflareCdn),
             "style-src 'self' 'unsafe-inline'",
             "base-uri 'self'",
             "font-src 'self'",

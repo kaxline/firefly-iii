@@ -1,0 +1,154 @@
+{% extends "./layout/default" %}
+
+{% block breadcrumbs %}
+    {{ Breadcrumbs.render }}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <form class="form-horizontal" action="{{ route('import.job.configuration.post',[importJob.key]) }}" method="post">
+            <input type="hidden" name="_token" value="{{ csrf_token() }}"/>
+
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <div class="box box-default">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">{{ trans('import.job_config_plaid_apply_rules') }}</h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <p>
+                                    {{ trans('import.job_config_plaid_apply_rules_text') }}
+                                </p>
+                                {{ ExpandedForm.checkbox('apply_rules', 1, true) }}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <div class="box box-default">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">{{ trans('import.job_config_plaid_accounts_title') }}</h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="row">
+                            <div id="ff-plaid-institution-tables-container" class="col-lg-8">
+                                <p>
+                                    Please select the Firefly III asset account(s) where the transactions from these
+                                    accounts should be stored. Remember, in order to import data both the Firefly III
+                                    account and the Plaid account must have the same currency.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="box-footer">
+                            <button id="add-new-plaid-account" class="btn btn-primary">
+                                {{ ('add')|_ }}
+                            </button>
+                        </div>
+                        <div class="box-footer">
+                            <button type="submit" class="btn pull-right btn-success">
+                                {{ ('submit')|_ }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ff-plaid-institution-table-template" style="display: none;" class="row">
+                    <div class="col-lg-12">
+                        <h4 class="ff-plaid-institution-name"></h4>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                            <tr>
+                                <th>Plaid Account</th>
+                                <th>Firefly Account</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+
+                <select id="ff-plaid-account-select-template" style="display: none;" class="form-control">
+                    <option value="0" label="{{ trans('import.plaid_do_not_import') }}">
+                        {{ trans('import.plaid_do_not_import') }}
+                    </option>
+                    {% for ffId, ffAccount in data.ff_accounts %}
+                        <option value="{{ ffId }}"{% if currentIban != '' and currentIban == ffAccount.iban %} selected{% endif %}>
+                            {{ ffAccount.name }}{% if ffAccount.iban !='' %} ({{ ffAccount.iban }}){% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+        </form>
+    </div>
+{% endblock %}
+{% block scripts %}
+
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+
+    <script>
+        $(function () {
+
+          try {
+            var handler = Plaid.create({
+              apiVersion: 'v2',
+              clientName: 'Firefly III',
+              env       : 'development',
+              product   : 'transactions',
+              key       : '99bb8230d99c6d88d1691d40bd6073',
+              onSuccess : function (public_token) {
+                console.log('public_token: ', public_token)
+                $.post('/import/plaid/create_access_token', {
+                  public_token: public_token
+                }, function (data) {
+                  console.log('data: ', data)
+                });
+              },
+            });
+          } catch (err) {
+            console.log('Error creating Plaid handler: ', err)
+          }
+
+          var importJob = window.location.href.substr(window.location.href.lastIndexOf('/') + 1);
+
+          console.log('importJob: ',importJob);
+
+          $.get('/import/plaid/accounts?importJob=' + importJob)
+            .done(function (institutions) {
+              console.log(institutions);
+              $.each(institutions, function (index, institution) {
+                var $tableTemplate = $('#ff-plaid-institution-table-template').clone();
+                $tableTemplate.find('.ff-plaid-institution-name').html(institution.name);
+                $tableTemplate.attr('style', '');
+                $.each(institution.accounts, function (index, account) {
+                    var $selectTemplate = $('#ff-plaid-account-select-template').clone();
+                    $selectTemplate.attr('name', `account_mapping[${account.account_id}]`);
+                    $selectTemplate.attr('style', '')
+                    $tableTemplate.find('tbody').first().append(`<tr><td>${account.name} (\$${account.balances.current})</td><td>${$selectTemplate[0].outerHTML}</td></tr>`)
+                })
+                $('#ff-plaid-institution-tables-container').append($tableTemplate[0].outerHTML)
+              })
+            })
+            .fail(function (err, textStatus, jqXHR) {
+              console.log('Error getting Plaid accounts: ', err.responseText);
+            });
+
+          $('#add-new-plaid-account').on('click', function (e) {
+            e.preventDefault()
+            e.stopPropagation()
+
+            handler.open();
+          })
+
+        })
+    </script>
+
+    <script type="text/javascript" src="v1/js/ff/import/plaid/accounts.js?v={{ FF_VERSION }}"></script>
+
+{% endblock %}
+{% block styles %}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "./layout/default" %}
+
+{% block breadcrumbs %}
+    {{ Breadcrumbs.render }}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <form class="form-horizontal" action="{{ route('import.prerequisites.post',['plaid', importJob.key]) }}" method="post">
+            <input type="hidden" name="_token" value="{{ csrf_token() }}"/>
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <div class="box box-default">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Prerequisites for an import using the Plaid API</h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <p>
+                                    In order to import data using the Spectre API (v4), you must provide Firefly III
+                                    with two secret values. They can be found on the secrets page.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-8">
+                                {{ ExpandedForm.text('app_id', app_id) }}
+                                {{ ExpandedForm.text('secret', secret) }}
+                                {{ ExpandedForm.text('public_key', public_key) }}
+                            </div>
+                        </div>
+                        <div class="box-footer">
+                            <button type="submit" class="btn pull-right btn-success">
+                                {{ ('submit')|_ }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+        </form>
+    </div>
+{% endblock %}
+{% block scripts %}
+{% endblock %}
+{% block styles %}
+{% endblock %}
