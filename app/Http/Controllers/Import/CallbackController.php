@@ -88,8 +88,8 @@ class CallbackController extends Controller
 
 	    // Count up through integers to find all the existing access tokens
 	    do {
-		    $preferenceKey = 'plaid_access_token_' . $count;
-		    $tokenPreference         = app( 'preferences' )->getForUser( $user, $preferenceKey, null );
+		    $preferenceKey   = 'plaid_access_token_' . $count;
+		    $tokenPreference = app( 'preferences' )->getForUser( $user, $preferenceKey, null );
 		    $token = null === $tokenPreference ? null : $tokenPreference->data;
 		    $tokenExists   = ! is_null( $token );
 		    if ( $tokenExists ) {

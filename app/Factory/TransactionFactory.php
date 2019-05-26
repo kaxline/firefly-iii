@@ -194,6 +194,10 @@ class TransactionFactory
         $this->setBudget($source, $budget);
         $this->setBudget($dest, $budget);
 
+        if (! array_key_exists( 'category_name', $data )) {
+	        $data['category_name'] = null;
+        }
+
         // set category
         $category = $this->findCategory($data['category_id'], $data['category_name']);
         $this->setCategory($source, $category);

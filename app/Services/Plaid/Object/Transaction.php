@@ -53,6 +53,8 @@ class Transaction extends PlaidObject
     /** @var string */
     private $name;
 	/** @var string */
+	private $description;
+	/** @var string */
 	private $localAccountName;
 	/** @var bool */
 	private $pending;
@@ -76,6 +78,7 @@ class Transaction extends PlaidObject
         $this->amount           = $data['amount'];
         $this->currencyCode     = $data['iso_currency_code'];
         $this->name             = $data['name'];
+        $this->description      = $data['name'];
         $this->localAccountName = $data['local_account_name'];
         $this->categories       = $data['category'];
         $this->pending          = $data['pending'];
@@ -97,6 +100,10 @@ class Transaction extends PlaidObject
      */
     public function getCategories(): array
     {
+    	if (!is_array($this->categories)) {
+    		$this->categories = [];
+	    }
+
         return $this->categories;
     }
 
@@ -170,7 +177,7 @@ class Transaction extends PlaidObject
     public function getOpposingAccountData(): array
     {
         $data  = [
-            'name'   => $this->localAccountName,
+            'name'   => $this->name,
             'iban'   => null,
             'number' => null,
             'bic'    => null,

@@ -120,12 +120,14 @@
           $.get('/import/plaid/accounts?importJob=' + importJob)
             .done(function (institutions) {
               console.log(institutions);
-              $.each(institutions, function (index, institution) {
+              $.each(institutions, function (institutionIndex, institution) {
                 var $tableTemplate = $('#ff-plaid-institution-table-template').clone();
+                $tableTemplate.attr('id', '#ff-plaid-institution-table-' + institutionIndex);
                 $tableTemplate.find('.ff-plaid-institution-name').html(institution.name);
                 $tableTemplate.attr('style', '');
-                $.each(institution.accounts, function (index, account) {
+                $.each(institution.accounts, function (accountIndex, account) {
                     var $selectTemplate = $('#ff-plaid-account-select-template').clone();
+                    $selectTemplate.attr('id', '#ff-plaid-account-select-' + institutionIndex + '-' + accountIndex);
                     $selectTemplate.attr('name', `account_mapping[${account.account_id}]`);
                     $selectTemplate.attr('style', '')
                     $tableTemplate.find('tbody').first().append(`<tr><td>${account.name} (\$${account.balances.current})</td><td>${$selectTemplate[0].outerHTML}</td></tr>`)
@@ -138,8 +140,8 @@
             });
 
           $('#add-new-plaid-account').on('click', function (e) {
-            e.preventDefault()
-            e.stopPropagation()
+            e.preventDefault();
+            e.stopPropagation();
 
             handler.open();
           })

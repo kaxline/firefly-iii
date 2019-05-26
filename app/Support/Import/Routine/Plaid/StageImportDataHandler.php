@@ -37,6 +37,7 @@ use FireflyIII\Services\Plaid\Request\ListTransactionsRequest;
 use FireflyIII\Support\Import\Routine\File\OpposingAccountMapper;
 use FireflyIII\Import\JobConfiguration\PlaidJobConfiguration;
 use Log;
+use Carbon\Carbon;
 
 /**
  * Class StageImportDataHandler
@@ -86,7 +87,13 @@ class StageImportDataHandler
         }
         $totalSet = array_merge(...$totalSet);
         Log::debug(sprintf('Found %d transactions in total.', \count($totalSet)));
+        Log::debug($totalSet);
         $this->repository->setTransactions($this->importJob, $totalSet);
+        // Save last time synced so we don't have to import every transaction each time
+	    $user = auth()->user();
+	    foreach ( $toImport as $plaidId => $localId ) {
+	        app( 'preferences' )->setForUser( $user, 'plaid_last_date_synced_' . $localId, Carbon::now()->toIso8601String() );
+	    }
     }
 
 
@@ -122,6 +129,8 @@ class StageImportDataHandler
         /** @var PlaidTransaction $transaction */
         foreach ($transactions as $index => $transaction) {
             Log::debug(sprintf('Now creating array for transaction %d of %d', $index + 1, $total));
+	        Log::debug( 'Transaction: ');
+	        Log::debug(serialize($transaction));
             $extra = [];
             $destinationData     = $transaction->getOpposingAccountData();
             $amount              = $transaction->getAmount();
@@ -134,7 +143,7 @@ class StageImportDataHandler
             $currencyCode = $transaction->getCurrencyCode();
             $type         = 'withdrawal';
             // switch source and destination if amount is greater than zero.
-            if (1 === bccomp($amount, '0')) {
+            if (1 === bccomp( '0', $amount )) {
                 [$source, $destination] = [$destination, $source];
                 $type = 'deposit';
             }
@@ -224,7 +233,6 @@ class StageImportDataHandler
     {
         $config   = $this->importJob->configuration;
         $accounts = $config['accounts'] ?? [];
-        print_r($config);
         foreach ($accounts as $account) {
             $plaidId = (string)($account['account_id'] ?? '');
             if ($plaidId === $accountId) {
@@ -254,16 +262,45 @@ class StageImportDataHandler
 	    $accessToken = PlaidJobConfiguration::getPlaidAccessTokenByIndex( $user, $plaidAccount->getAccessTokenKey() );
 	    $client = PlaidJobConfiguration::getPlaidClient( $user );
 
-	    $response = $client->transactions()->get($accessToken, '2019-01-01', '2019-01-30');
-	    $transactionsListData = $response['transactions'];
+	    // Check last synced date
+	    // If no last synced date, start from two years ago
+	    // Go up until now in pages of 250
+
+	    $lastSyncedDatePreference = app( 'preferences' )->getForUser( $user, 'plaid_last_date_synced_' . $localAccount->id, '2017-01-01' );
+
+	    Log::debug('Last synced date string: ' . $lastSyncedDatePreference->data);
+
+	    $lastSyncedDate = new Carbon($lastSyncedDatePreference->data);
+
+	    $now = Carbon::now();
+
+	    $count = 250;
+
+	    $offset = 0;
+
+	    $finalTransactions = [];
+
+	    do {
+	        $response = $client->transactions()->get($accessToken, $lastSyncedDate->format('Y-m-d'), $now->format('Y-m-d'), [], [], $count, $offset);
+	        Log::debug('Count of transactions: ' . count( $response['transactions'] ));
+	        $finalTransactions = array_merge($finalTransactions, $response['transactions']);
+	        $offset += $count;
+	    } while ( count( $response['transactions'] ) == $count );
 
 	    $transactions = [];
 
-	    foreach ( $transactionsListData as $transactionData) {
+	    foreach ( $finalTransactions as $transactionData) {
 	    	$transactionData['local_account_name'] = $localAccount->name;
 	    	$transaction = new Transaction($transactionData);
 		    $transactions[] = $transaction;
 	    }
+
+	    Log::debug('Final response:');
+	    Log::debug(serialize($finalTransactions));
+
+	    Log::debug('Transaction count: ' . count($finalTransactions));
+
+//	    return [];
 
         return $this->convertToArray($transactions, $plaidAccount, $localAccount);
     }
