@@ -38,6 +38,7 @@ use FireflyIII\Support\Import\Routine\File\OpposingAccountMapper;
 use FireflyIII\Import\JobConfiguration\PlaidJobConfiguration;
 use Log;
 use Carbon\Carbon;
+use Cache;
 
 /**
  * Class StageImportDataHandler
@@ -266,6 +267,8 @@ class StageImportDataHandler
 	    // If no last synced date, start from two years ago
 	    // Go up until now in pages of 250
 
+	    Cache::clear();
+
 	    $lastSyncedDatePreference = app( 'preferences' )->getForUser( $user, 'plaid_last_date_synced_' . $localAccount->id, '2017-01-01' );
 
 	    Log::debug('Last synced date string: ' . $lastSyncedDatePreference->data);
@@ -281,7 +284,7 @@ class StageImportDataHandler
 	    $finalTransactions = [];
 
 	    do {
-	        $response = $client->transactions()->get($accessToken, $lastSyncedDate->format('Y-m-d'), $now->format('Y-m-d'), [], [], $count, $offset);
+	        $response = $client->transactions()->get($accessToken, $lastSyncedDate->format('Y-m-d'), $now->format('Y-m-d'), [], [$plaidAccount->getAccountId()], $count, $offset);
 	        Log::debug('Count of transactions: ' . count( $response['transactions'] ));
 	        $finalTransactions = array_merge($finalTransactions, $response['transactions']);
 	        $offset += $count;
@@ -290,9 +293,22 @@ class StageImportDataHandler
 	    $transactions = [];
 
 	    foreach ( $finalTransactions as $transactionData) {
-	    	$transactionData['local_account_name'] = $localAccount->name;
-	    	$transaction = new Transaction($transactionData);
-		    $transactions[] = $transaction;
+	    	if ($transactionData['account_id'] == $plaidAccount->getAccountId() && !$transactionData['pending']) {
+			    Log::debug( '' );
+	    		Log::debug('Found transaction for account: ');
+	    		Log::debug(serialize($transactionData));
+			    Log::debug( '' );
+			    $transactionData['local_account_name'] = $localAccount->name;
+			    $transaction                           = new Transaction( $transactionData );
+			    $transactions[]                        = $transaction;
+		    } else {
+			    Log::debug('');
+	    		Log::debug('Non-matching transaction: ');
+			    Log::debug( serialize( $transactionData ) );
+			    Log::debug( '' );
+		    }
+
+
 	    }
 
 	    Log::debug('Final response:');
